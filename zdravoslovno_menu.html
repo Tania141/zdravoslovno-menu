@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0F6E56">
+<title>Здравословно меню</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #0F6E56;
+  --green-light: #E1F5EE;
+  --green-mid: #1D9E75;
+  --green-dark: #085041;
+  --amber: #BA7517;
+  --amber-light: #FAEEDA;
+  --text: #1a1a1a;
+  --text-muted: #6b6b6b;
+  --text-hint: #a0a0a0;
+  --bg: #f5f5f0;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); overscroll-behavior: none; }
+body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; }
+
+.header {
+  background: var(--green-dark);
+  padding: 52px 20px 20px;
+  color: white;
+  flex-shrink: 0;
+}
+.header-inner { display: flex; align-items: center; gap: 14px; }
+.header-leaf {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.header h1 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; line-height: 1.2; }
+.header p { font-size: 12px; opacity: 0.65; margin-top: 2px; font-weight: 300; }
+
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-btn {
+  flex: 1; padding: 11px 4px 9px;
+  border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 500;
+  color: var(--text-hint);
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border-bottom: 2px solid transparent;
+  transition: color .2s, border-color .2s;
+  letter-spacing: .3px;
+}
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.nav-btn.active { color: var(--green); border-bottom-color: var(--green); }
+
+.content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 14px 90px; }
+
+.month-scroll { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 14px; scrollbar-width: none; }
+.month-scroll::-webkit-scrollbar { display: none; }
+.mtab {
+  flex-shrink: 0; padding: 7px 16px;
+  border-radius: 20px; border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 400;
+  color: var(--text-muted); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.mtab.active { background: var(--green-dark); color: white; border-color: var(--green-dark); font-weight: 500; }
+
+.day-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.day-head {
+  padding: 13px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; border-bottom: 1px solid var(--border);
+}
+.day-head h3 { font-family: 'DM Serif Display', serif; font-size: 15px; font-weight: 400; color: var(--text); }
+.day-badge {
+  font-size: 11px; color: var(--green);
+  background: var(--green-light);
+  padding: 3px 9px; border-radius: 10px;
+  font-weight: 500;
+}
+.day-body { display: none; }
+.day-body.open { display: block; }
+
+.meal-row {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.meal-row:last-child { border-bottom: none; }
+.meal-time {
+  font-size: 10px; color: var(--text-hint);
+  min-width: 52px; padding-top: 2px; letter-spacing: .3px;
+  text-transform: uppercase; font-weight: 500;
+}
+.meal-info { flex: 1; }
+.meal-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.meal-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+.recipe-tog {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--green); flex-shrink: 0; font-size: 14px;
+  transition: background .15s;
+}
+.recipe-tog:active { background: var(--green-light); }
+
+.inline-recipe {
+  display: none; padding: 12px 16px 14px;
+  background: var(--green-light);
+  border-top: 1px solid rgba(15,110,86,.15);
+}
+.inline-recipe.open { display: block; }
+.inline-recipe h4 { font-family: 'DM Serif Display', serif; font-size: 14px; color: var(--green-dark); margin-bottom: 6px; }
+.rec-meta { font-size: 11px; color: var(--green); margin-bottom: 8px; font-weight: 500; }
+.rec-ing { font-size: 11px; color: var(--green-dark); background: rgba(255,255,255,.6); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; line-height: 1.6; }
+.rec-step { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(15,110,86,.12); font-size: 12px; color: var(--green-dark); line-height: 1.5; }
+.rec-step:last-child { border-bottom: none; }
+.rec-num { color: var(--green); font-weight: 500; flex-shrink: 0; min-width: 14px; }
+
+.section-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-hint); margin: 4px 0 10px; }
+
+.progress-wrap { margin-bottom: 14px; }
+.progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-text { font-size: 12px; color: var(--text-muted); }
+.progress-pct { font-size: 12px; font-weight: 500; color: var(--green); }
+.pbar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.pbar-fill { height: 5px; background: var(--green); border-radius: 3px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+
+.filter-scroll { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; padding-bottom: 2px; }
+.filter-scroll::-webkit-scrollbar { display: none; }
+.fpill {
+  flex-shrink: 0; padding: 6px 13px; border-radius: 16px;
+  border: 1px solid var(--border); background: var(--surface);
+  font-family: 'DM Sans', sans-serif; font-size: 11px; color: var(--text-muted);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.fpill.active { background: var(--green-dark); color: white; border-color: var(--green-dark); }
+
+.shop-cat-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; overflow: hidden; }
+.shop-cat-head { padding: 11px 16px; font-size: 13px; font-weight: 500; color: var(--text); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.shop-cat-head span { font-size: 16px; }
+.shop-row { padding: 11px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s; }
+.shop-row:last-child { border-bottom: none; }
+.shop-row:active { background: var(--bg); }
+.shop-check-box {
+  width: 20px; height: 20px; border-radius: 5px;
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .15s; color: white; font-size: 12px;
+}
+.shop-check-box.on { background: var(--green); border-color: var(--green); }
+.shop-item-name { font-size: 13px; color: var(--text); flex: 1; transition: color .15s; }
+.shop-item-name.done { text-decoration: line-through; color: var(--text-hint); }
+.shop-qty { font-size: 11px; color: var(--text-hint); white-space: nowrap; }
+
+.recipe-full-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; overflow: hidden; }
+.recipe-head { padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid var(--border); }
+.recipe-head h3 { font-family: 'DM Serif Display', serif; font-size: 15px; font-weight: 400; flex: 1; margin-right: 10px; line-height: 1.3; }
+.recipe-cat-badge { font-size: 10px; padding: 3px 9px; border-radius: 8px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+.badge-breakfast { background: var(--amber-light); color: var(--amber); }
+.badge-lunch { background: #E6F1FB; color: #185FA5; }
+.badge-dinner { background: var(--green-light); color: var(--green-dark); }
+.recipe-full-body { display: none; padding: 14px 16px; }
+.recipe-full-body.open { display: block; }
+.recipe-full-ing { font-size: 12px; color: var(--text-muted); background: var(--bg); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; line-height: 1.7; }
+.recipe-full-step { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.5; }
+.recipe-full-step:last-child { border-bottom: none; }
+.step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f0f0f0; --text-muted: #aaa; --text-hint: #666;
+    --bg: #121212; --surface: #1e1e1e; --border: rgba(255,255,255,0.09);
+    --green-light: rgba(29,158,117,0.15); --amber-light: rgba(186,117,23,0.15);
+  }
+  .header { background: #052e22; }
+  .mtab.active, .fpill.active { background: var(--green-mid); border-color: var(--green-mid); }
+  .day-badge { background: rgba(29,158,117,.2); }
+  .inline-recipe { background: rgba(29,158,117,.12); }
+  .rec-ing { background: rgba(255,255,255,.08); }
+  .recipe-full-ing { background: #111; }
+  .step-num { background: var(--green-mid); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-leaf">🌿</div>
+    <div>
+      <h1>Здравословно меню</h1>
+      <p>Персонализирана диетична програма · 12 месеца</p>
+    </div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="show('menu',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Меню
+  </button>
+  <button class="nav-btn" onclick="show('shop',this)">
+    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    Пазаруване
+  </button>
+  <button class="nav-btn" onclick="show('recipes',this)">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+    Рецепти
+  </button>
+</nav>
+
+<div class="content">
+
+  <div id="s-menu" class="screen active">
+    <div class="month-scroll" id="monthTabs"></div>
+    <div id="menuContent"></div>
+  </div>
+
+  <div id="s-shop" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-row">
+        <span class="progress-text" id="shopTxt">0 от 0 продукта</span>
+        <span class="progress-pct" id="shopPct">0%</span>
+      </div>
+      <div class="pbar"><div class="pbar-fill" id="shopFill" style="width:0%"></div></div>
+    </div>
+    <div class="filter-scroll" id="shopFilters"></div>
+    <div id="shopContent"></div>
+  </div>
+
+  <div id="s-recipes" class="screen">
+    <div class="filter-scroll" id="recFilters"></div>
+    <div id="recContent"></div>
+  </div>
+
+</div>
+
+<script>
+const MONTHS = ['Юни','Юли','Август','Септември','Октомври','Ноември','Декември','Януари','Февруари','Март','Април','Май'];
+
+const RECIPES = {
+  'eggs-avo': { name:'Яйца с авокадо и рукола', time:'10 мин', kcal:'431 ккал', cat:'Закуска',
+    ing:['2 яйца','½ авокадо','шепа рукола','1 с.л. зехтин','сол, черен пипер','лимонов сок'],
+    steps:['Сварете яйцата 7 мин за меко варени.','Обелете авокадото, нарежете на резени.','Наредете рукола в чиния, добавете авокадо.','Поставете яйцата отгоре, полейте зехтин и лимон.','Подправете с сол и пипер.'] },
+  'oatmeal': { name:'Овесена каша с горски плодове', time:'10 мин', kcal:'350 ккал', cat:'Закуска',
+    ing:['50г овесени ядки','200мл вода','30г орехи','шепа боровинки или малини','1 с.л. ленено семе смляно'],
+    steps:['Сварете овеса с вода на средна температура 5 мин.','Разбъркайте добре до кремообразна консистенция.','Добавете наситнени орехи и ленено семе.','Наредете плодовете отгоре. Без захар.'] },
+  'omelette': { name:'Омлет с чушки и лук', time:'10 мин', kcal:'250 ккал', cat:'Закуска',
+    ing:['2 яйца','½ червена чушка','¼ лук','1 с.л. зехтин','сол, пипер, магданоз'],
+    steps:['Нарежете чушка и лук на ситно.','Задушете 2 мин в зехтин.','Разбийте яйцата, подправете, изсипете върху зеленчуците.','Покрийте с капак, гответе 3-4 мин на тих огън.','Сервирайте с пресен магданоз.'] },
+  'chicken-broc': { name:'Пилешко на пара с броколи и киноа', time:'25 мин', kcal:'404 ккал', cat:'Обяд',
+    ing:['130г пилешко гърди','150г броколи','100г сварена киноа','1 с.л. зехтин','куркума, черен пипер, чесън на прах'],
+    steps:['Сварете киноа 1:2 с вода, 15 мин на тихо.','Наподправете пилешкото с куркума, пипер, чесън.','Пригответе на пара 15-18 мин.','Броколито на пара 8 мин — да остане хрупкаво.','Наредете в чиния, полейте зехтин суров.'] },
+  'sardines': { name:'Сардини с голяма салата', time:'10 мин', kcal:'380 ккал', cat:'Обяд',
+    ing:['2 сардини от консерва','рукола','1 домат','½ краставица','½ авокадо','маслини 5-6 бр','зехтин, лимон'],
+    steps:['Отцедете сардините от консервата.','Нарежете зеленчуците на едро.','Смесете всичко в голяма чиния.','Полейте с 2 с.л. зехтин и сок от ½ лимон.','Добавете сардините отгоре.'] },
+  'mackerel': { name:'Скумрия на скара с спанак', time:'20 мин', kcal:'420 ккал', cat:'Обяд',
+    ing:['1 скумрия (200г)','150г пресен спанак','2 скилидки чесън','зехтин','лимон, сол, пипер'],
+    steps:['Почистете скумрията, подправете с лимон и пипер.','Скарирайте 6-7 мин от всяка страна.','В тиган загрейте зехтин, задушете чесъна 1 мин.','Добавете спанака, разбъркайте 2 мин до омекване.','Сервирайте рибата върху леглото от спанак.'] },
+  'salmon': { name:'Сьомга на пара с аспержи', time:'20 мин', kcal:'380 ккал', cat:'Обяд',
+    ing:['150г сьомга','150г аспержи','1 с.л. зехтин','лимон','копър, сол, пипер'],
+    steps:['Подправете сьомгата с лимон, копър, сол.','Сложете в пароварка с аспержите.','Гответе на пара 12-15 мин.','Полейте зехтин суров преди сервиране.','Добавете резени лимон за свежест.'] },
+  'chickpea': { name:'Нахут с тиквички', time:'20 мин', kcal:'380 ккал', cat:'Обяд',
+    ing:['200г нахут варен','2 тиквички','2 домата','2 скилидки чесън','куркума','зехтин, лимон'],
+    steps:['Нарежете тиквичките на кубчета, запечете 10 мин.','Загрейте зехтин, задушете чесъна.','Добавете домати, куркума, гответе 5 мин.','Добавете нахут и тиквичките.','Разбъркайте, подправете, полейте лимон.'] },
+  'chicken-quinoa': { name:'Пилешко с киноа и спанак', time:'25 мин', kcal:'420 ккал', cat:'Обяд',
+    ing:['130г пилешко','100г киноа сурова','150г спанак','2 скилидки чесън','зехтин, куркума'],
+    steps:['Сварете киноа в 200мл вода 15 мин.','Нарежете пилешкото, задушете в зехтин 8 мин.','Добавете чесъна и куркумата.','Добавете спанака, гответе 2 мин.','Смесете с киноа, подправете.'] },
+  'beef-stew': { name:'Телешко задушено', time:'60 мин', kcal:'380 ккал', cat:'Обяд',
+    ing:['150г телешко постно','2 моркова','1 стрък целина','½ лук','розмарин, дафинов лист','зехтин, сол'],
+    steps:['Нарежете телешкото на кубчета 3-4 см.','Запечете в зехтин от всички страни.','Добавете нарязаните зеленчуци, разбъркайте.','Налейте 300мл вода, добавете подправките.','Задушете на тих огън 45-50 мин с капак.'] },
+  'soup-tuna': { name:'Крем супа от тиква с риба тон', time:'25 мин', kcal:'211 ккал', cat:'Вечеря',
+    ing:['300г тиква','1 морков','1 ч.л. джинджифил настърган','100г риба тон консерва','зехтин, сол'],
+    steps:['Нарежете тиква и морков на кубчета.','Варете 15 мин в 400мл вода.','Пасирайте с блендер до гладка консистенция.','Добавете джинджифил, подправете, полейте зехтин.','Сервирайте с риба тон отстрани.'] },
+  'lentil-stew': { name:'Леща яхния с куркума', time:'30 мин', kcal:'320 ккал', cat:'Вечеря',
+    ing:['200г зелена леща','2 домата','1 лук','2 скилидки чесън','1 ч.л. куркума','зехтин, кимион'],
+    steps:['Накиснете лещата 30 мин, отцедете.','Запържете лук и чесън в зехтин 3 мин.','Добавете домати (нарязани) и куркума.','Добавете лещата и 500мл вода.','Варете 20-25 мин до омекване.'] },
+  'chicken-soup': { name:'Пилешка супа с зеленчуци', time:'35 мин', kcal:'180 ккал', cat:'Вечеря',
+    ing:['120г пилешко','1 морков','1 стрък целина','½ лук','2 скилидки чесън','магданоз'],
+    steps:['Сложете пилешкото в 700мл студена вода.','Добавете морков, целина, лук, чесън.','Варете 25-30 мин, отпенвайте.','Извадете пилешкото, наситнете, върнете в супата.','Подправете, добавете пресен магданоз.'] },
+  'veggie-soup': { name:'Зеленчукова крем супа', time:'25 мин', kcal:'150 ккал', cat:'Вечеря',
+    ing:['300г тиква','2 моркова','1 стрък целина','1 ч.л. джинджифил','зехтин, сол, пипер'],
+    steps:['Нарежете всичко на кубчета.','Варете 15 мин в 500мл вода.','Пасирайте с потопяем блендер.','Добавете джинджифил, подправете.','Полейте 1 ч.л. зехтин суров при сервиране.'] }
+};
+
+const WEEK = [
+  { day:'Понеделник', kcal:1235, meals:[
+    {t:'Закуска', n:'Яйца с авокадо', s:'2 яйца, авокадо, рукола, зехтин', r:'eggs-avo'},
+    {t:'Обяд', n:'Пилешко на пара', s:'Пиле, броколи, киноа, куркума', r:'chicken-broc'},
+    {t:'Следобед', n:'Кисело мляко с малини', s:'150г пълномаслено, шепа малини', r:null},
+    {t:'Вечеря', n:'Крем супа + риба тон', s:'Тиква, морков, джинджифил', r:'soup-tuna'}
+  ]},
+  { day:'Вторник', kcal:1180, meals:[
+    {t:'Закуска', n:'Овесена каша', s:'Овес, орехи, боровинки, ленено семе', r:'oatmeal'},
+    {t:'Обяд', n:'Сардини с голяма салата', s:'Сардини, рукола, домат, авокадо', r:'sardines'},
+    {t:'Следобед', n:'Ябълка + бадеми', s:'1 ябълка, 10 бадема', r:null},
+    {t:'Вечеря', n:'Пилешка супа', s:'Пиле, зеленчуци, чесън', r:'chicken-soup'}
+  ]},
+  { day:'Сряда', kcal:1310, meals:[
+    {t:'Закуска', n:'Кисело мляко + ядки', s:'200г кисело мляко, орехи, чиа семена', r:null},
+    {t:'Обяд', n:'Скумрия на скара', s:'Скумрия, спанак, лимон, зехтин', r:'mackerel'},
+    {t:'Следобед', n:'Тиквени семки', s:'30г + зелен чай', r:null},
+    {t:'Вечеря', n:'Леща яхния', s:'Леща, домати, чесън, куркума', r:'lentil-stew'}
+  ]},
+  { day:'Четвъртък', kcal:1195, meals:[
+    {t:'Закуска', n:'Омлет с чушки', s:'2 яйца, чушки, лук, зехтин', r:'omelette'},
+    {t:'Обяд', n:'Нахут с тиквички', s:'Нахут, тиквички, доматен сос', r:'chickpea'},
+    {t:'Следобед', n:'Малини + кисело мляко', s:'Шепа малини, 100г кисело мляко', r:null},
+    {t:'Вечеря', n:'Сьомга на пара', s:'Сьомга, аспержи, зехтин', r:'salmon'}
+  ]},
+  { day:'Петък', kcal:1260, meals:[
+    {t:'Закуска', n:'Овесена каша', s:'Овес, бадеми, ягоди', r:'oatmeal'},
+    {t:'Обяд', n:'Пилешко с киноа', s:'Пиле, киноа, спанак, чесън', r:'chicken-quinoa'},
+    {t:'Следобед', n:'Авокадо + яйце', s:'½ авокадо, 1 варено яйце', r:null},
+    {t:'Вечеря', n:'Зеленчукова супа', s:'Тиква, морков, целина, джинджифил', r:'veggie-soup'}
+  ]},
+  { day:'Събота', kcal:1350, meals:[
+    {t:'Закуска', n:'Яйца с авокадо', s:'2 яйца, рукола, домат, зехтин', r:'eggs-avo'},
+    {t:'Обяд', n:'Скумрия с гръцка салата', s:'Скумрия, домат, краставица, фета', r:'mackerel'},
+    {t:'Следобед', n:'Орехи + горски плодове', s:'30г орехи, шепа боровинки', r:null},
+    {t:'Вечеря', n:'Телешко задушено', s:'Телешко, моркови, целина, розмарин', r:'beef-stew'}
+  ]},
+  { day:'Неделя', kcal:1290, meals:[
+    {t:'Закуска', n:'Кисело мляко + чиа', s:'200г, чиа семена, орехи', r:null},
+    {t:'Обяд', n:'Сьомга с леща', s:'Сьомга, зелена леща, спанак', r:'salmon'},
+    {t:'Следобед', n:'Ябълка + тиквени семки', s:'1 ябълка, 20г семки', r:null},
+    {t:'Вечеря', n:'Пилешка крем супа', s:'Пиле, праз, зеленчуци', r:'chicken-soup'}
+  ]}
+];
+
+const SEASONAL = {
+  'Юни':[], 'Юли':['Диня (малко)','Праскови','Патладжан'],
+  'Август':['Смокини','Тиква','Царевица'], 'Септември':['Круши','Сливи','Броколи'],
+  'Октомври':['Дюли','Кореноплодни'], 'Ноември':['Нар','Карфиол'],
+  'Декември':['Клементини','Брюкселско зеле'], 'Януари':['Грейпфрут','Зимни тикви'],
+  'Февруари':['Киви','Цвекло'], 'Март':['Ягоди','Аспержи'],
+  'Април':['Ягоди','Грах'], 'Май':['Череши','Тиквички']
+};
+
+const SHOP = [
+  {cat:'Протеини', icon:'🥚', items:[
+    {n:'Яйца',q:'14 бр/седмица'},{n:'Пилешко гърди',q:'500г/седмица'},
+    {n:'Сьомга',q:'300г/седмица'},{n:'Скумрия',q:'2 бр/седмица'},
+    {n:'Сардини консерва',q:'3 кутии/седмица'},{n:'Риба тон консерва',q:'2 кутии/седмица'},
+    {n:'Нахут варен',q:'400г/седмица'},{n:'Леща',q:'300г/седмица'}
+  ]},
+  {cat:'Зеленчуци', icon:'🥦', items:[
+    {n:'Спанак',q:'300г/седмица'},{n:'Рукола',q:'150г/седмица'},
+    {n:'Броколи',q:'400г/седмица'},{n:'Тиква',q:'500г/седмица'},
+    {n:'Морков',q:'4 бр/седмица'},{n:'Домати',q:'6 бр/седмица'},
+    {n:'Краставица',q:'3 бр/седмица'},{n:'Авокадо',q:'3 бр/седмица'},
+    {n:'Чесън',q:'1 глава/седмица'},{n:'Лук',q:'2 бр/седмица'},
+    {n:'Тиквички',q:'2 бр/седмица'},{n:'Чушки',q:'3 бр/седмица'},
+    {n:'Аспержи',q:'200г/седмица'}
+  ]},
+  {cat:'Мазнини', icon:'🫒', items:[
+    {n:'Зехтин екстра върджин',q:'500мл/месец'},{n:'Орехи',q:'200г/седмица'},
+    {n:'Бадеми',q:'150г/седмица'},{n:'Тиквени семки',q:'100г/седмица'},
+    {n:'Ленено семе смляно',q:'200г/месец'},{n:'Чиа семена',q:'100г/месец'}
+  ]},
+  {cat:'Зърнени', icon:'🌾', items:[
+    {n:'Овесени ядки',q:'500г/месец'},{n:'Киноа',q:'400г/месец'},{n:'Елда',q:'300г/месец'}
+  ]},
+  {cat:'Млечни', icon:'🧀', items:[
+    {n:'Кисело мляко пълномаслено',q:'1кг/седмица'},{n:'Фета сирене',q:'200г/седмица'}
+  ]},
+  {cat:'Плодове', icon:'🍎', items:[
+    {n:'Боровинки или малини',q:'300г/седмица'},{n:'Ябълки',q:'4 бр/седмица'},
+    {n:'Лимони',q:'3 бр/седмица'},{n:'Круши',q:'2 бр/седмица'}
+  ]},
+  {cat:'Подправки', icon:'🌿', items:[
+    {n:'Куркума',q:'100г/месец'},{n:'Черен пипер смлян',q:'50г/месец'},
+    {n:'Джинджифил пресен',q:'100г/седмица'},{n:'Розмарин',q:'1 снопче/седмица'},
+    {n:'Кимион смлян',q:'50г/месец'},{n:'Дафинов лист',q:'1 пакет/месец'}
+  ]}
+];
+
+let curMonth = 'Юни';
+let shopDone = {};
+let shopFilter = 'all';
+let recFilter = 'all';
+let openDays = {};
+let openRec = {};
+let openRecFull = {};
+
+function show(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'shop') renderShop();
+  if (id === 'recipes') renderRecipes();
+}
+
+function renderMonthTabs() {
+  document.getElementById('monthTabs').innerHTML = MONTHS.map(m =>
+    `<button class="mtab${m===curMonth?' active':''}" onclick="selMonth('${m}')">${m}</button>`
+  ).join('');
+}
+
+function selMonth(m) {
+  curMonth = m;
+  openDays = {}; openRec = {};
+  renderMonthTabs(); renderMenu();
+}
+
+function renderMenu() {
+  const seasonal = SEASONAL[curMonth] || [];
+  document.getElementById('menuContent').innerHTML = WEEK.map((d, di) => {
+    const isOpen = openDays[di];
+    return `<div class="day-card">
+      <div class="day-head" onclick="toggleDay(${di})">
+        <h3>${d.day}</h3>
+        <span class="day-badge">~${d.kcal} ккал</span>
+      </div>
+      <div class="day-body${isOpen?' open':''}">
+        ${d.meals.map((m, mi) => {
+          const sub = (mi===1 && seasonal.length) ? m.s + (seasonal[di%seasonal.length] ? ', ' + seasonal[di%seasonal.length] : '') : m.s;
+          const rid = `r-${di}-${mi}`;
+          const isRecOpen = openRec[rid];
+          return `<div class="meal-row">
+            <span class="meal-time">${m.t}</span>
+            <div class="meal-info">
+              <div class="meal-name">${m.n}</div>
+              <div class="meal-sub">${sub}</div>
+            </div>
+            ${m.r ? `<button class="recipe-tog" onclick="toggleRec('${rid}','${m.r}')" aria-label="Рецепта">📖</button>` : ''}
+          </div>
+          ${m.r ? `<div class="inline-recipe${isRecOpen?' open':''}" id="${rid}">
+            ${isRecOpen ? buildInlineRec(m.r) : ''}
+          </div>` : ''}`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildInlineRec(key) {
+  const r = RECIPES[key];
+  if (!r) return '';
+  return `<h4>${r.name}</h4>
+    <div class="rec-meta">${r.time} · ${r.kcal}</div>
+    <div class="rec-ing">${r.ing.join(' · ')}</div>
+    ${r.steps.map((s,i) => `<div class="rec-step"><span class="rec-num">${i+1}.</span>${s}</div>`).join('')}`;
+}
+
+function toggleDay(di) {
+  openDays[di] = !openDays[di];
+  renderMenu();
+}
+
+function toggleRec(rid, key) {
+  openRec[rid] = !openRec[rid];
+  renderMenu();
+}
+
+function renderShop() {
+  const allItems = SHOP.reduce((a,c) => a + c.items.length, 0);
+  const done = Object.values(shopDone).filter(Boolean).length;
+  const pct = allItems ? Math.round(done/allItems*100) : 0;
+  document.getElementById('shopTxt').textContent = `${done} от ${allItems} продукта`;
+  document.getElementById('shopPct').textContent = pct + '%';
+  document.getElementById('shopFill').style.width = pct + '%';
+
+  const cats = ['all', ...SHOP.map(c => c.cat)];
+  document.getElementById('shopFilters').innerHTML = cats.map(c =>
+    `<button class="fpill${shopFilter===c?' active':''}" onclick="setShopFilter('${c}',this)">${c==='all'?'Всички':c}</button>`
+  ).join('');
+
+  const show = shopFilter === 'all' ? SHOP : SHOP.filter(c => c.cat === shopFilter);
+  document.getElementById('shopContent').innerHTML = show.map(cat => `
+    <div class="shop-cat-card">
+      <div class="shop-cat-head"><span>${cat.icon}</span>${cat.cat}</div>
+      ${cat.items.map((item, ii) => {
+        const key = cat.cat + ii;
+        const on = shopDone[key];
+        return `<div class="shop-row" onclick="toggleShop('${key}')">
+          <div class="shop-check-box${on?' on':''}">
+            ${on ? '✓' : ''}
+          </div>
+          <span class="shop-item-name${on?' done':''}">${item.n}</span>
+          <span class="shop-qty">${item.q}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+}
+
+function setShopFilter(f, btn) {
+  shopFilter = f;
+  renderShop();
+}
+
+function toggleShop(key) {
+  shopDone[key] = !shopDone[key];
+  renderShop();
+}
+
+function renderRecipes() {
+  const cats = ['all', ...new Set(Object.values(RECIPES).map(r => r.cat))];
+  document.getElementById('recFilters').innerHTML = cats.map(c =>
+    `<button class="fpill${recFilter===c?' active':''}" onclick="setRecFilter('${c}',this)">${c==='all'?'Всички':c}</button>`
+  ).join('');
+
+  const list = Object.entries(RECIPES).filter(([k,r]) => recFilter==='all' || r.cat===recFilter);
+  const catClass = {Закуска:'badge-breakfast', Обяд:'badge-lunch', Вечеря:'badge-dinner'};
+  document.getElementById('recContent').innerHTML = list.map(([key,r]) => {
+    const isOpen = openRecFull[key];
+    return `<div class="recipe-full-card">
+      <div class="recipe-head" onclick="toggleRecFull('${key}')">
+        <h3>${r.name}</h3>
+        <span class="recipe-cat-badge ${catClass[r.cat]||''}">${r.cat}</span>
+      </div>
+      <div class="recipe-full-body${isOpen?' open':''}">
+        <div class="recipe-full-ing">${r.ing.join(' · ')}</div>
+        ${r.steps.map((s,i) => `<div class="recipe-full-step">
+          <div class="step-num">${i+1}</div>
+          <span>${s}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setRecFilter(f, btn) {
+  recFilter = f;
+  renderRecipes();
+}
+
+function toggleRecFull(key) {
+  openRecFull[key] = !openRecFull[key];
+  renderRecipes();
+}
+
+renderMonthTabs();
+renderMenu();
+</script>
+</body>
+</html>
